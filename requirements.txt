@@ -1,0 +1,4 @@
+pycryptodome
+factordb-pycli
+gmpy2
+owiener

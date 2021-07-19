@@ -1,4 +1,0 @@
-pip install pycryptodome
-pip install factordb-pycli
-pip install gmpy2
-pip install owiener
