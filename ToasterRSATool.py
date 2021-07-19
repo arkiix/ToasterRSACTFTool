@@ -160,4 +160,4 @@ else:
         else:
             print_green(answer)
     else:
-        print('No ciphertext [-c]')
+        print_red('No ciphertext [-c]')
