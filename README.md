@@ -21,9 +21,7 @@ Argument | Description
 
 ## Attack/Decrypt RSA
 
-To attack or decrypt RSA, specify all the data you have from this list: n, n2, e, c, d, p, q, path to key (The key argument is universal and can accept a public or private key)
-
-The tool will start attacking when you give it data that is not enough to decrypt.
+To attack or decrypt RSA, provide all the data you have. The tool will start attacking when you give it data that is not enough to decrypt.
 
 ## Encrypt RSA
 
