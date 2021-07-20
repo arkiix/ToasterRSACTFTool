@@ -10,5 +10,5 @@ def attack(n, e, c):
         else:
             c += n
         cnt += 1
-        if cnt > 200000:
+        if cnt > 119000000:
             return None
