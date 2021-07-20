@@ -61,13 +61,13 @@ To encrypt the message, you must use --encrypt "message". Keys are automatically
 ### Ubuntu and Kali specific Instructions
     git clone https://github.com/arkiix/ToasterRSACTFTool
     cd ToasterRSACTFTool
-    pip3 install -r "requirements.txt"
+    pip3 install -r requirements.txt
     python3 ToasterRSATool.py
     
 ### MacOS-specific Instructions
 If you cannot install using this command:
     
-    pip3 install -r "requirements.txt"
+    pip3 install -r requirements.txt
 It might work, it: 
 
     easy_install `cat requirements.txt`
