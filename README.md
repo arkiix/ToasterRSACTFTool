@@ -1,6 +1,6 @@
 # ToasterRSATool
 
-A tool for working with RSA, can encrypt, decrypt, recover the private key by exploiting attacks.
+Tool to work with the RSA encryption algorithm encrypts, decrypts, recovers the private key by exploiting attacks.
 
 # Usage
 
@@ -21,11 +21,13 @@ Argument | Description
 
 ## Attack/Decrypt RSA
 
-To attack or decrypt RSA, provide all the data you have. The tool will start attacking when you give it data that is not enough to decrypt.
+To attack or decrypt RSA provide it with all data you have. In case you provide it with insufficient data for decrypting, the tool will attack.
 
 ## Encrypt RSA
 
-To encrypt the message, you must use --encrypt "message". Keys are automatically generated and displayed to you, saved in /keys. You can use your own key for encryption, then you need to add --keys path_to_key.
+To encrypt a message use --encrypt "message". Keys are generated and displayed in the console and saved automatically in /keys. To use your own encryption key - add 
+    
+    --key path_to_key
 
 ### Encryption using generated keys
 
@@ -65,9 +67,9 @@ To encrypt the message, you must use --encrypt "message". Keys are automatically
     python3 ToasterRSATool.py
     
 ### MacOS-specific Instructions
-If you cannot install using this command:
+If you fail to install it with the help of this command:
     
     pip3 install -r requirements.txt
-It might work, it: 
+Try the following one:
 
     easy_install `cat requirements.txt`
