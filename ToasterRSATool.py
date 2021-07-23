@@ -1,7 +1,8 @@
-import Arguments_parser, RSA
+import Arguments_parser, RSA, config
 from attacks import FactorDB_attack, Gcd, Little_exponent, Wiener_attack, One_factor, Square, Monoprime, Small_factor, Fermat
 
-head = '''
+
+HEAD = '''
   ______                 __            ____  _____ ___  ______            __
  /_  __/___  ____ ______/ /____  _____/ __ \/ ___//   |/_  __/___  ____  / /
   / / / __ \/ __ `/ ___/ __/ _ \/ ___/ /_/ /\__ \/ /| | / / / __ \/ __ \/ / 
@@ -10,14 +11,18 @@ head = '''
                                                              Tool by @arkiix
 '''
 
+
 def print_pos(text):
     print(text, end=' '*(40 - len(text)))
+
 
 def print_red(text):
     print("\033[31m{}\033[0m".format(text))
 
+
 def print_green(text):
     print("\033[32m{}\033[0m" .format(text))
+
 
 def import_key(key):
     n = e = d = None
@@ -45,6 +50,7 @@ def attack(n, p, q, e, d, c, n2):
                 print_red('FAIL')
         return None
 
+
     if d != None and n != None:
         print_pos('RSA decryption...')
         dt = RSA.decrypt(c, n, d)
@@ -52,7 +58,6 @@ def attack(n, p, q, e, d, c, n2):
         res = check_result(dt)
         if res != None:
             return res
-
 
     if p != None and q != None:
         if n == None:
@@ -74,7 +79,7 @@ def attack(n, p, q, e, d, c, n2):
     if e != None and n != None:
         if e < 1000:
             print_pos('Little_exponent.attack...')
-            dt = Little_exponent.attack(n, e, c)
+            dt = Little_exponent.attack(n, e, c, config.LITTLE_EXPONENT_ITERATIONS)
 
             res = check_result(dt)
             if res != None:
@@ -93,7 +98,6 @@ def attack(n, p, q, e, d, c, n2):
             if res != None:
                 return res
 
-
         if n2 != None:
             print_pos('Start Gcd.attack...')
             p, q = Gcd.attack(n, n2)
@@ -103,25 +107,30 @@ def attack(n, p, q, e, d, c, n2):
             if res != None:
                 return res
 
+        attack_list = [FactorDB_attack.attack, Wiener_attack.attack, Square.attack, Monoprime.attack,
+                       Small_factor.attack, Fermat.attack]
+        attack_str = ['FactorDB.attack', 'Wiener.attack', 'Square.attack', 'Monoprime.attack',
+                           'Small_factor.attack', 'Fermat.attack']
 
-        fast_attack = [FactorDB_attack.attack, Wiener_attack.attack, Square.attack, Monoprime.attack, Small_factor.attack, Fermat.attack]
-        fast_attack_str = ['FactorDB.attack', 'Wiener.attack', 'Square.attack', 'Monoprime.attack',
-                       'Small_factor.attack', 'Fermat.attack']
-
-        for i, name in zip(fast_attack, fast_attack_str):
+        for attack, name in zip(attack_list, attack_str):
             print_pos(name + '...')
-            a = i(n, e, c)
-            if a != None:
-                if type(a) is list:
-                    p, q = a
-                    d = RSA.private_exponent(p, q, e)
-                    a = RSA.decrypt(c, n, d)
+            if name != 'Fermat.attack':
+                res = attack(n, e, c)
+            else:
+                res = attack(n, e, c, config.FERMAT_ITERATIONS)
 
-            res = check_result(a)
+            if res != None:
+                if type(res) is list:
+                    p, q = res
+                    d = RSA.private_exponent(p, q, e)
+                    res = RSA.decrypt(c, n, d)
+
+            res = check_result(res)
             if res != None:
                 return res
 
-print('\033[33m{}\033[0m'.format(head))
+
+print('\033[33m{}\033[0m'.format(HEAD))
 
 n, p, q, e, d, c, n2, key, enc = Arguments_parser.parse()
 
@@ -145,7 +154,6 @@ if enc != None:
     if public_key != None:
         print(public_key.decode() + '\n')
         print(private_key.decode() + '\n')
-        #print(f'{n = }\n{e = }\n{d = }\n')
 
     print(f'{c = }')
     print_green('\nKeys are automatically saved in /keys\n')

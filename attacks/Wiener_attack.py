@@ -1,6 +1,7 @@
 from Crypto.Util.number import long_to_bytes
 import owiener
 
+
 def attack(n, e, c):
     d = owiener.attack(e, n)
 
@@ -8,5 +9,4 @@ def attack(n, e, c):
         return None
 
     dt = pow(c, d, n)
-
     return long_to_bytes(dt)

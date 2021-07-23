@@ -1,6 +1,5 @@
-def attack(n, e, c):
-    p = 0
-    q = 0
+def attack(n):
+    p = q = 0
 
     for factor in range(2, 100000):
         if n % factor == 0:
