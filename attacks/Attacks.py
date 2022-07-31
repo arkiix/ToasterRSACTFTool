@@ -1,10 +1,10 @@
-from attacks import FactorDB, Fermat, Gcd, Little_exponent, Monoprime, One_factor, Small_factor, Square, Wiener
+from attacks import FactorDB, Fermat, GCD, Little_exponent, Monoprime, One_factor, Small_factor, Square, Wiener
 
 
 class Attacks:
     factor_db = FactorDB.attack
     fermat = Fermat.attack
-    gcd = Gcd.attack
+    gcd = GCD.attack
     little_exponent = Little_exponent.attack
     monoprime = Monoprime.attack
     one_factor = One_factor.attack
