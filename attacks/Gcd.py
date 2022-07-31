@@ -1,11 +1,14 @@
 from math import gcd
 
 
-def attack(n, f):
-    p = gcd(n, f)
-    q = n // p
+def attack(input_data):
+    if not (input_data.n and input_data.n2):
+        return None
 
-    if p == 1 or p * q != n:
+    p = gcd(input_data.n, input_data.n2)
+    q = input_data.n // p
+
+    if p == 1 or p * q != input_data.n:
         return None
     
     return [p, q]

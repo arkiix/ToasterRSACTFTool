@@ -1,10 +1,14 @@
-from Crypto.Util.number import long_to_bytes
 from factordb.factordb import FactorDB
 
 
-def attack(n, e, c):
-    f = FactorDB(n)
-    f.connect()
+def attack(input_data):
+    f = FactorDB(input_data.n)
+
+    try:
+        f.connect()
+    except:
+        return None
+
     factors = f.get_factor_list()
 
     if len(factors) == 1:
@@ -14,6 +18,6 @@ def attack(n, e, c):
     for i in factors:
         phi *= i - 1
 
-    d = pow(e, -1, phi)
-    dt = pow(c, d, n)
-    return long_to_bytes(dt)
+    d = pow(input_data.e, -1, phi)
+
+    return d

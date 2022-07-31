@@ -1,17 +1,22 @@
-from Crypto.Util.number import long_to_bytes
 from gmpy2 import iroot
+from Crypto.Util.number import long_to_bytes
+import config
 
 
-def attack(n, e, c, iterations):
+def attack(input_data):
     cnt = 0
     while True:
-        root = iroot(c, e)
+        try:
+            root = iroot(input_data.c, input_data.e)
+        except:
+            root = (0, False)
 
-        if root[1] == True:
+        if root[1]:
             return long_to_bytes(root[0])
         else:
-            c += n
+            input_data.c += input_data.n
 
-        if cnt > iterations:
+        if cnt > config.LITTLE_EXPONENT_ITERATIONS:
             return None
-        cnt += 1
+        else:
+            cnt += 1
