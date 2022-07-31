@@ -1,14 +1,12 @@
 from math import isqrt
-from Crypto.Util.number import long_to_bytes
 
 
-def attack(n, e, c):
-    f = isqrt(n)
+def attack(input_data):
+    f = isqrt(input_data.n)
 
-    if f * f != n:
+    if f * f != input_data.n:
         return None
 
     phi = f * (f - 1)
-    d = pow(e, -1, phi)
-    dt = pow(c, d, n)
-    return long_to_bytes(dt)
+    d = pow(input_data.e, -1, phi)
+    return d

@@ -1,21 +1,23 @@
+import string
 from argparse import ArgumentParser
+import models
 
 
-def parse_number(num_list):
-    methods = ['int(num)', 'int(num, 16)', 'int(num[2:], 16)']
-    res = []
+def parse_number(num: str):
+    if num and num.startswith('0x'):
+        return int(num, 16)
 
-    for num in num_list:
-        number = None
-        for i in methods:
-            try:
-                number = eval(i)
+    try:
+        for symbol in num:
+            if symbol not in string.digits:
+                num = int(num, 16)
                 break
-            except:
-                continue
-        res.append(number)
+        else:
+            num = int(num)
+    except:
+        pass
 
-    return res
+    return num
 
 
 def parse():
@@ -32,4 +34,4 @@ def parse():
     parser.add_argument('--encrypt', help='Encrypt message')
     args = parser.parse_args()
 
-    return parse_number([args.n, args.p, args.q, args.e, args.d, args.c, args.n2]) + [args.key, args.encrypt]
+    return models.Input_Data(**{k: parse_number(v) for k, v in args.__dict__.items()})

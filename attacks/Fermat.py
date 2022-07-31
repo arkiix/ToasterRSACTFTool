@@ -1,20 +1,23 @@
 from math import isqrt
+import config
 
 
-def attack(n, iterations):
-    a = b = isqrt(n)
-    b2 = pow(a, 2) - n
+def attack(input_data):
+    a = b = isqrt(input_data.n)
+    b2 = pow(a, 2) - input_data.n
 
     cnt = 0
-    while pow(b, 2) != b2 and cnt < iterations:
+    while pow(b, 2) != b2 and cnt < config.FERMAT_ITERATIONS:
         a += 1
-        b2 = pow(a, 2) - n
+        b2 = pow(a, 2) - input_data.n
         b = isqrt(b2)
         cnt += 1
 
     p, q = (a + b), (a - b)
 
-    if n != p * q:
+    if input_data.n != p * q:
         return None
 
-    return [p, q]
+    phi = (p - 1) * (q - 1)
+    d = pow(input_data.e, -1, phi)
+    return d

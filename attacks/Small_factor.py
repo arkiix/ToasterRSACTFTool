@@ -1,10 +1,8 @@
-def attack(n):
-    p = q = 0
-
+def attack(input_data):
     for factor in range(2, 100000):
-        if n % factor == 0:
+        if input_data.n % factor == 0:
             p = factor
-            q = n // factor
+            q = input_data.n // factor
             break
     else:
         return None

@@ -1,171 +1,140 @@
-import Arguments_parser, RSA, config
-from attacks import FactorDB_attack, Gcd, Little_exponent, Wiener_attack, One_factor, Square, Monoprime, Small_factor, Fermat
-
-
-HEAD = '''
-  ______                 __            ____  _____ ___  ______            __
- /_  __/___  ____ ______/ /____  _____/ __ \/ ___//   |/_  __/___  ____  / /
-  / / / __ \/ __ `/ ___/ __/ _ \/ ___/ /_/ /\__ \/ /| | / / / __ \/ __ \/ / 
- / / / /_/ / /_/ (__  ) /_/  __/ /  / _, _/___/ / ___ |/ / / /_/ / /_/ / /  
-/_/  \____/\__,_/____/\__/\___/_/  /_/ |_|/____/_/  |_/_/  \____/\____/_/   
-                                                             Tool by @arkiix
-'''
+import Arguments_parser
+import config
+import models
+from RSA import Cipher
+from attacks.Attacks import Attacks
 
 
 def print_pos(text):
     print(text, end=' '*(40 - len(text)))
 
 
-def print_red(text):
-    print("\033[31m{}\033[0m".format(text))
+def print_color(text, color: str):
+    color_num = 31 if color.lower() == 'red' else 32
+    print(f'\033[{color_num}m{text}\033[0m')
 
 
-def print_green(text):
-    print("\033[32m{}\033[0m" .format(text))
+def validate_decrypt_text(decrypt_text):
+    if decrypt_text:
+        res_datatype = type(decrypt_text)
+        if res_datatype is list:
+            input_data.p, input_data.q = decrypt_text
 
+        elif res_datatype is int:
+            input_data.d = decrypt_text
 
-def import_key(key):
-    n = e = d = None
+        if res_datatype not in (str, bytes):
+            decrypt_text = Cipher(input_data=input_data).decrypt(input_data.c)
 
-    key = RSA.import_key(key)
-    try:
-        n = key.n
-        e = key.e
-        d = key.d
-    except:
-        if n != key.n or e != key.e:
-            print('Error import key!')
-
-    return n, e, d
-
-
-def attack(n, p, q, e, d, c, n2):
-    def check_result(dt):
-        if dt == None:
-            print_red('FAIL')
-        else:
+    res = None
+    if not decrypt_text:
+        print_color('FAIL', 'red')
+    else:
+        if type(decrypt_text) is bytes:
             try:
-                return dt.decode()
+                res = decrypt_text.decode()
             except:
-                print_red('FAIL')
-        return None
+                print_color('FAIL', 'red')
+    return res
 
 
-    if d != None and n != None:
+def attack(input_data: models.Input_Data):
+    if input_data.d and input_data.n:
         print_pos('RSA decryption...')
-        dt = RSA.decrypt(c, n, d)
+        dt = Cipher(input_data=input_data).decrypt(input_data.c)
+        res = validate_decrypt_text(dt)
 
-        res = check_result(dt)
-        if res != None:
+        if res:
             return res
 
-    if p != None and q != None:
-        if n == None:
-            n = p * q
+    if input_data.p and input_data.q:
+        if not input_data.n:
+            input_data.n = input_data.p * input_data.q
 
-        if e == None:
-            e = 65537
+        if not input_data.e:
+            input_data.e = 65537
 
-        print_pos('Computing a private exponent...')
-        d = RSA.private_exponent(p, q, e)
-        print_green('SUCCES')
         print_pos('RSA decryption...')
-        dt = RSA.decrypt(c, n, d)
+        dt = Cipher(input_data=input_data).decrypt(input_data.c)
+        res = validate_decrypt_text(dt)
 
-        res = check_result(dt)
-        if res != None:
+        if res:
             return res
 
-    if e != None and n != None:
-        if e < 1000:
-            print_pos('Little_exponent.attack...')
-            dt = Little_exponent.attack(n, e, c, config.LITTLE_EXPONENT_ITERATIONS)
+    if input_data.e and input_data.n:
+        priority_f = []
 
-            res = check_result(dt)
-            if res != None:
-                return res
+        if input_data.e < 1000:
+            priority_f.append(Attacks.little_exponent)
 
-        if (p != None and q == None) or (p == None and q != None):
-            if p != None:
-                factor = p
-            else:
-                factor = q
-            print_pos('Start One_factor.attack...')
-            p, q = One_factor.attack(n, factor)
-            d = RSA.private_exponent(p, q, e)
-            dt = RSA.decrypt(c, n, d)
-            res = check_result(dt)
-            if res != None:
-                return res
+        elif input_data.e > 70000:
+            priority_f.append(Attacks.wiener)
 
-        if n2 != None:
-            print_pos('Start Gcd.attack...')
-            p, q = Gcd.attack(n, n2)
-            d = RSA.private_exponent(p, q, e)
-            dt = RSA.decrypt(c, n, d)
-            res = check_result(dt)
-            if res != None:
-                return res
+        if (input_data.p and not input_data.q) or (not input_data.p and input_data.q):
+            priority_f.append(Attacks.one_factor)
 
-        attack_list = [FactorDB_attack.attack, Wiener_attack.attack, Square.attack, Monoprime.attack,
-                       Small_factor.attack, Fermat.attack]
-        attack_str = ['FactorDB.attack', 'Wiener.attack', 'Square.attack', 'Monoprime.attack',
-                           'Small_factor.attack', 'Fermat.attack']
+        if input_data.n2:
+            priority_f.append(Attacks.gcd)
 
-        for attack, name in zip(attack_list, attack_str):
-            print_pos(name + '...')
-            if name != 'Fermat.attack':
-                res = attack(n, e, c)
-            else:
-                res = attack(n, e, c, config.FERMAT_ITERATIONS)
+        attack_functions = list(filter(lambda x: not x[0].startswith('_'), Attacks.__dict__.items()))
 
-            if res != None:
-                if type(res) is list:
-                    p, q = res
-                    d = RSA.private_exponent(p, q, e)
-                    res = RSA.decrypt(c, n, d)
+        # Сортировка атак по приоритету
+        attack_functions.sort(key=lambda x: 0 if x[1] in priority_f else 1)
 
-            res = check_result(res)
-            if res != None:
+        for name, func in attack_functions:
+            print_pos(f'Start {name} attack...')
+            res = func(input_data)
+
+            res = validate_decrypt_text(res)
+            if res:
                 return res
 
 
-print('\033[33m{}\033[0m'.format(HEAD))
+if __name__ == '__main__':
+    print('\033[33m{}\033[0m'.format(config.HEAD))
 
-n, p, q, e, d, c, n2, key, enc = Arguments_parser.parse()
+    input_data = Arguments_parser.parse()
 
-if enc != None:
-    public_key = private_key = None
+    if input_data.encrypt:
+        cipher = None
+        if not input_data.key:
+            cipher = Cipher()
+            public_key = cipher.key.publickey().exportKey()
+            private_key = cipher.key.exportKey()
 
-    if key == None:
-        key = RSA.generate_key()
-        public_key = key.publickey().exportKey()
-        private_key = key.exportKey()
-        with open('keys/pub.pem', 'w') as f:
-            f.write(public_key.decode())
-        with open('keys/private.pem', 'w') as f:
-            f.write(private_key.decode())
-        n, e, d = key.n, key.e, key.d
-    else:
-        n, e, d = import_key(key)
+            with open('keys/pub.pem', 'w') as f:
+                f.write(public_key.decode())
 
-    c = RSA.encrypt(enc, n, e)
+            with open('keys/private.pem', 'w') as f:
+                f.write(private_key.decode())
 
-    if public_key != None:
-        print(public_key.decode() + '\n')
-        print(private_key.decode() + '\n')
-
-    print(f'{c = }')
-    print_green('\nKeys are automatically saved in /keys\n')
-else:
-    if key != None:
-        n, e, d = import_key(key)
-
-    if c != None:
-        answer = attack(n, p, q, e, d, c, n2)
-        if answer == None:
-            print_red('None ;(')
         else:
-            print_green(answer)
+            cipher = Cipher(key=input_data.key)
+
+        c = hex(cipher.encrypt(input_data.encrypt))
+
+        print(f'{c = }')
+        print_color('Keys are automatically saved in /keys\n', 'green')
+
     else:
-        print_red('No ciphertext [-c]')
+        if input_data.key:
+            key = Cipher(input_data.key).key
+
+            input_data.n = key.n if not input_data.n else input_data.n
+            input_data.e = key.e if not input_data.e else input_data.e
+            try:
+                input_data.d = key.d if not input_data.d else input_data.d
+                input_data.p = key.p if not input_data.p else input_data.p
+                input_data.q = key.q if not input_data.q else input_data.q
+            except:
+                pass
+
+        if input_data.c:
+            answer = attack(input_data)
+
+            if not answer:
+                print_color('None ;(', 'red')
+            else:
+                print_color(answer, 'green')
+        else:
+            print_color('No ciphertext [-c]', 'red')
